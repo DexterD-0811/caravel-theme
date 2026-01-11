@@ -1,0 +1,47 @@
+<section class="bg-white">
+  <div class="mx-auto max-w-7xl px-4 pt-6">
+    <div class="relative overflow-hidden rounded-3xl ring-1 ring-black/10">
+      <div class="relative aspect-[16/7] w-full bg-black/5">
+        {% if section.settings.image != blank %}
+          <img
+            src="{{ section.settings.image | image_url: width: 2400 }}"
+            alt="{{ section.settings.image.alt | escape }}"
+            class="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+            width="2400"
+            height="1050">
+        {% else %}
+          {{ 'image' | placeholder_svg_tag: 'absolute inset-0 h-full w-full object-cover text-black/15' }}
+        {% endif %}
+      </div>
+
+      <div class="absolute inset-0 flex items-center">
+        <div class="px-8 py-10 md:px-14">
+          <h1 class="max-w-xl font-serif text-4xl leading-tight text-white drop-shadow-sm md:text-6xl">
+            {{ section.settings.heading }}
+          </h1>
+
+          {% if section.settings.button_label != blank and section.settings.button_link != blank %}
+            <a href="{{ section.settings.button_link }}"
+               class="mt-6 inline-flex items-center justify-center rounded-md bg-caravel-brown px-6 py-3 text-sm font-semibold text-white hover:opacity-95">
+              {{ section.settings.button_label }}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Home hero",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "New Spring\nCollection" },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop Now" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    { "type": "image_picker", "id": "image", "label": "Hero image" }
+  ],
+  "presets": [{ "name": "Home hero" }]
+}
+{% endschema %}

@@ -1,66 +1,53 @@
-<header>
-  <h2 class="header__title">
-    {{ shop.name | link_to: routes.root_url }}
-  </h2>
-
-  <div class="header__menu">
-    {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
-    {% endfor %}
-  </div>
-
-  <div class="header__icons">
-    {% if shop.customer_accounts_enabled %}
-      {{ 'icon-account.svg' | inline_asset_content | link_to: routes.account_url }}
-    {% endif %}
-
-    <a href="{{ routes.cart_url }}">
-      {% if cart.item_count > 0 %}
-        <sup>{{ cart.item_count }}</sup>
+<header class="border-b border-black/10 bg-white/80 backdrop-blur">
+  <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+    <a href="{{ routes.root_url }}" class="flex items-center gap-2" aria-label="{{ shop.name }}">
+      {% if settings.logo != blank %}
+        <img
+          src="{{ settings.logo | image_url: width: 220 }}"
+          alt="{{ shop.name | escape }}"
+          class="h-8 w-auto"
+          loading="lazy">
+      {% else %}
+        <img
+          src="{{ 'caravel_logo.png' | asset_url }}"
+          alt="Caravel"
+          class="h-8 w-auto"
+          loading="lazy">
       {% endif %}
-
-      {{ 'icon-cart.svg' | inline_asset_content }}
     </a>
+
+    <nav class="hidden items-center gap-6 md:flex" aria-label="Main menu">
+      {% if linklists.main-menu.links.size > 0 %}
+        {% for link in linklists.main-menu.links %}
+          <a class="text-sm text-black/70 hover:text-black" href="{{ link.url }}">{{ link.title }}</a>
+        {% endfor %}
+      {% else %}
+        <a class="text-sm text-black/70 hover:text-black" href="{{ routes.root_url }}">Home</a>
+        <a class="text-sm text-black/70 hover:text-black" href="{{ routes.collections_url }}">Shop</a>
+        <a class="text-sm text-black/70 hover:text-black" href="/pages/about">About</a>
+        <a class="text-sm text-black/70 hover:text-black" href="/blogs/news">Blog</a>
+        <a class="text-sm text-black/70 hover:text-black" href="/pages/contact">Contact Us</a>
+      {% endif %}
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a class="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-black/5"
+         href="{{ routes.search_url }}" aria-label="Search">
+        {% render 'icon', name: 'search' %}
+      </a>
+
+      <a class="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-black/5"
+         href="{{ routes.cart_url }}" aria-label="Cart">
+        {% render 'icon', name: 'cart' %}
+      </a>
+
+      <span class="ml-1 inline-flex min-w-6 justify-center rounded-full bg-black px-2 py-1 text-xs font-semibold text-white">
+        {{ cart.item_count }}
+      </span>
+    </div>
   </div>
 </header>
 
-{% stylesheet %}
-  header {
-    height: 5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  header a {
-    position: relative;
-    text-decoration: none;
-    color: var(--color-foreground);
-  }
-  header a sup {
-    position: absolute;
-    left: 100%;
-    overflow: hidden;
-    max-width: var(--page-margin);
-  }
-  header svg {
-    width: 2rem;
-  }
-  header .header__menu,
-  header .header__icons {
-    display: flex;
-    gap: 1rem;
-  }
-{% endstylesheet %}
-
 {% schema %}
-{
-  "name": "t:general.header",
-  "settings": [
-    {
-      "type": "link_list",
-      "id": "menu",
-      "label": "t:labels.menu"
-    }
-  ]
-}
+{ "name": "Header", "settings": [] }
 {% endschema %}
