@@ -10,20 +10,18 @@
 {
   "sections": {
     "main": {
-      "type": "main-product",
-      "settings": {}
-    },
-    "recommendations": {
-      "type": "product-recommendations",
+      "type": "main-collection",
       "settings": {
-        "heading": "You may also like",
-        "limit": 4,
-        "intent": "related"
+        "products_per_page": 12,
+        "show_collection_image": true,
+        "show_collection_description": true,
+        "show_switcher": true,
+        "collections_menu": "",
+        "show_sort": true
       }
     }
   },
   "order": [
-    "main",
-    "recommendations"
+    "main"
   ]
 }
