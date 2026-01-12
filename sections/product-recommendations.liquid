@@ -1,124 +1,107 @@
-{% comment %}
-  Caravel — Product recommendations
-  Uses Shopify native endpoint:
-  /recommendations/products?product_id=...&limit=...&intent=...
-{% endcomment %}
-
-<section class="bg-white" data-recommendations-section>
+<section class="bg-white">
   <div class="mx-auto max-w-7xl px-4 py-12 md:py-16">
-    <div class="mb-7 flex items-end justify-between gap-6">
-      <div>
-        <h2 class="font-serif text-2xl tracking-tight md:text-3xl">
-          {{ section.settings.heading }}
-        </h2>
-        <p class="mt-2 text-sm text-black/60">
-          Similar styles picked just for you.
-        </p>
-      </div>
-    </div>
+    <h2 class="font-serif text-2xl tracking-tight md:text-3xl">
+      {{ section.settings.heading }}
+    </h2>
+    <p class="mt-2 text-sm text-black/60">Similar styles picked just for you.</p>
 
     <div
       data-recommendations
       data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.limit }}&intent={{ section.settings.intent }}"
-      class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+      class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
     >
-      {%- comment -%} Loading skeleton {%- endcomment -%}
       {% for i in (1..4) %}
         <div class="overflow-hidden rounded-2xl ring-1 ring-black/10">
           <div class="aspect-[3/4] bg-black/5"></div>
           <div class="p-4">
-            <div class="h-4 w-3/4 bg-black/10 rounded"></div>
-            <div class="mt-2 h-4 w-1/2 bg-black/10 rounded"></div>
-            <div class="mt-4 h-10 w-full bg-black/10 rounded-xl"></div>
+            <div class="h-4 w-3/4 rounded bg-black/10"></div>
+            <div class="mt-2 h-4 w-1/2 rounded bg-black/10"></div>
+            <div class="mt-4 h-10 w-full rounded-xl bg-black/10"></div>
           </div>
         </div>
       {% endfor %}
     </div>
+
+    <p class="mt-6 text-sm text-black/60" data-empty-msg hidden>
+      No recommendations yet. Add more products/collections and Shopify will start suggesting items.
+    </p>
   </div>
 </section>
 
 {% javascript %}
 (function () {
-  const root = document.querySelector('[data-recommendations-section]');
-  if (!root) return;
-
-  const grid = root.querySelector('[data-recommendations]');
+  const grid = document.querySelector('[data-recommendations]');
   if (!grid) return;
 
   const url = grid.getAttribute('data-url');
   if (!url) return;
 
   fetch(url)
-    .then((r) => r.text())
-    .then((html) => {
+    .then(r => r.text())
+    .then(html => {
       const doc = new DOMParser().parseFromString(html, 'text/html');
-      const incoming = doc.querySelector('[data-recommendations]');
+      const incoming = doc.querySelector('[data-recommendations-render]');
       if (!incoming) return;
 
-      // Replace skeleton with rendered products
       grid.innerHTML = incoming.innerHTML.trim();
 
-      // If no recommendations, hide section
-      if (!grid.querySelector('[data-rec-card]')) {
-        root.classList.add('hidden');
-      }
+      const hasCards = !!grid.querySelector('[data-rec-card]');
+      const emptyMsg = document.querySelector('[data-empty-msg]');
+      if (emptyMsg) emptyMsg.hidden = hasCards;
     })
     .catch(() => {
-      // If endpoint fails, hide section (clean UI)
-      root.classList.add('hidden');
+      const emptyMsg = document.querySelector('[data-empty-msg]');
+      if (emptyMsg) emptyMsg.hidden = false;
     });
 })();
 {% endjavascript %}
 
-{% comment %}
-  When this section is fetched via Shopify recommendations endpoint,
-  it renders server-side below as the "real" markup.
-{% endcomment %}
-
 {% if recommendations.performed %}
-  {% if recommendations.products_count > 0 %}
-    {% for p in recommendations.products %}
-      {% assign v = p.selected_or_first_available_variant %}
-      <article class="overflow-hidden rounded-2xl bg-white ring-1 ring-black/10" data-rec-card>
-        <a href="{{ p.url }}" class="block">
-          <div class="relative aspect-[3/4] w-full bg-black/5">
-            {% if p.featured_image != blank %}
-              <img
-                src="{{ p.featured_image | image_url: width: 900 }}"
-                alt="{{ p.featured_image.alt | escape }}"
-                class="absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
-                width="900"
-                height="1200">
+  <div data-recommendations-render hidden>
+    {% if recommendations.products_count > 0 %}
+      {% for p in recommendations.products %}
+        {% assign v = p.selected_or_first_available_variant %}
+        <article class="overflow-hidden rounded-2xl bg-white ring-1 ring-black/10" data-rec-card>
+          <a href="{{ p.url }}" class="block">
+            <div class="relative aspect-[3/4] w-full bg-black/5">
+              {% if p.featured_image != blank %}
+                <img
+                  src="{{ p.featured_image | image_url: width: 900 }}"
+                  alt="{{ p.featured_image.alt | escape }}"
+                  class="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                  width="900"
+                  height="1200">
+              {% else %}
+                {{ 'product' | placeholder_svg_tag: 'absolute inset-0 h-full w-full object-cover text-black/15' }}
+              {% endif %}
+            </div>
+
+            <div class="px-4 pb-3 pt-3 text-center">
+              <p class="font-serif text-base">{{ p.title }}</p>
+              <p class="mt-1 text-sm text-black/70">{{ v.price | money }}</p>
+            </div>
+          </a>
+
+          <div class="px-4 pb-4">
+            {% if v.available %}
+              <button
+                type="button"
+                class="js-add-to-cart w-full rounded-xl bg-[#8B6F5A] px-4 py-2 text-center text-sm font-semibold text-white hover:opacity-95"
+                data-variant-id="{{ v.id }}"
+                data-original-text="Add to cart">
+                Add to cart
+              </button>
             {% else %}
-              {{ 'product' | placeholder_svg_tag: 'absolute inset-0 h-full w-full object-cover text-black/15' }}
+              <div class="w-full rounded-xl border border-black/15 px-4 py-2 text-center text-sm text-black/60">
+                Sold out
+              </div>
             {% endif %}
           </div>
-
-          <div class="px-4 pb-3 pt-3 text-center">
-            <p class="font-serif text-base">{{ p.title }}</p>
-            <p class="mt-1 text-sm text-black/70">{{ v.price | money }}</p>
-          </div>
-        </a>
-
-        <div class="px-4 pb-4">
-          {% if v.available %}
-            <button
-              type="button"
-              class="js-add-to-cart w-full rounded-xl bg-[#8B6F5A] px-4 py-2 text-center text-sm font-semibold text-white hover:opacity-95 disabled:opacity-50"
-              data-variant-id="{{ v.id }}"
-              data-original-text="Add to cart">
-              Add to cart
-            </button>
-          {% else %}
-            <div class="w-full rounded-xl border border-black/15 px-4 py-2 text-center text-sm text-black/60">
-              Sold out
-            </div>
-          {% endif %}
-        </div>
-      </article>
-    {% endfor %}
-  {% endif %}
+        </article>
+      {% endfor %}
+    {% endif %}
+  </div>
 {% endif %}
 
 {% schema %}
