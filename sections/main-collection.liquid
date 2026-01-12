@@ -1,0 +1,163 @@
+{% comment %}
+  Caravel — Main Collection (OS 2.0)
+  Features:
+  - Collection banner (optional)
+  - Collection switcher dropdown (menu-driven)
+  - Native Shopify sorting
+  - Product grid + pagination
+  - Placeholders for missing images
+{% endcomment %}
+
+<section class="bg-white">
+  <div class="mx-auto max-w-7xl px-4 py-10 md:py-14">
+
+    {%- comment -%} HEADER {%- endcomment -%}
+    <header class="mb-8">
+      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 class="font-serif text-3xl tracking-tight md:text-4xl">
+            {{ collection.title }}
+          </h1>
+
+          {% if section.settings.show_collection_description and collection.description != blank %}
+            <div class="prose prose-sm mt-3 max-w-none text-black/75">
+              {{ collection.description }}
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+          {%- comment -%} COLLECTION SWITCHER (menu-driven) {%- endcomment -%}
+          {% if section.settings.show_switcher and section.settings.collections_menu != blank %}
+            {% assign menu = linklists[section.settings.collections_menu] %}
+            {% if menu != blank and menu.links.size > 0 %}
+              <div class="flex items-center gap-2">
+                <label for="CollectionSwitcher" class="text-sm font-semibold text-black/70">
+                  Browse
+                </label>
+                <select
+                  id="CollectionSwitcher"
+                  class="h-10 rounded-xl border border-black/15 bg-white px-3 text-sm outline-none focus:border-black/30"
+                  onchange="if(this.value){ window.location = this.value; }"
+                >
+                  {% for l in menu.links %}
+                    <option value="{{ l.url }}" {% if l.url == collection.url %}selected{% endif %}>
+                      {{ l.title }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endif %}
+          {% endif %}
+
+          {%- comment -%} SORTING (native Shopify) {%- endcomment -%}
+          {% if section.settings.show_sort %}
+            <form method="get" class="flex items-center gap-2">
+              <label for="SortBy" class="text-sm font-semibold text-black/70">Sort</label>
+
+              {%- assign sort_by = collection.sort_by | default: collection.default_sort_by -%}
+
+              <select
+                id="SortBy"
+                name="sort_by"
+                class="h-10 rounded-xl border border-black/15 bg-white px-3 text-sm outline-none focus:border-black/30"
+                onchange="this.form.submit()"
+              >
+                <option value="manual" {% if sort_by == 'manual' %}selected{% endif %}>Featured</option>
+                <option value="best-selling" {% if sort_by == 'best-selling' %}selected{% endif %}>Best selling</option>
+                <option value="title-ascending" {% if sort_by == 'title-ascending' %}selected{% endif %}>Alphabetically, A–Z</option>
+                <option value="title-descending" {% if sort_by == 'title-descending' %}selected{% endif %}>Alphabetically, Z–A</option>
+                <option value="price-ascending" {% if sort_by == 'price-ascending' %}selected{% endif %}>Price, low to high</option>
+                <option value="price-descending" {% if sort_by == 'price-descending' %}selected{% endif %}>Price, high to low</option>
+                <option value="created-ascending" {% if sort_by == 'created-ascending' %}selected{% endif %}>Date, old to new</option>
+                <option value="created-descending" {% if sort_by == 'created-descending' %}selected{% endif %}>Date, new to old</option>
+              </select>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+
+      {%- comment -%} COLLECTION BANNER {%- endcomment -%}
+      {% if section.settings.show_collection_image %}
+        <div class="mt-6 overflow-hidden rounded-3xl ring-1 ring-black/10 bg-black/5">
+          <div class="relative aspect-[16/6] w-full">
+            {% if collection.featured_image != blank %}
+              <img
+                src="{{ collection.featured_image | image_url: width: 2000 }}"
+                alt="{{ collection.title | escape }}"
+                class="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+                width="2000"
+                height="750">
+            {% else %}
+              {{ 'collection-apparel-2' | placeholder_svg_tag: 'absolute inset-0 h-full w-full object-cover text-black/15' }}
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </header>
+
+    {%- comment -%} PRODUCTS {%- endcomment -%}
+    {% paginate collection.products by section.settings.products_per_page %}
+      {% if collection.products_count > 0 %}
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {% for product in collection.products %}
+            {%- comment -%}
+              Requires snippets/product-card.liquid (recommended).
+              If you don't have it, tell me and I’ll paste an inline card version.
+            {%- endcomment -%}
+            {% render 'product-card', product: product, show_badge: false %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="rounded-3xl bg-black/5 p-10 text-center ring-1 ring-black/10">
+          <p class="font-semibold">No products found</p>
+          <p class="mt-2 text-sm text-black/70">
+            Add products to this collection to display them here.
+          </p>
+        </div>
+      {% endif %}
+
+      {%- comment -%} PAGINATION {%- endcomment -%}
+      {% if paginate.pages > 1 %}
+        <nav class="mt-10 flex items-center justify-center gap-2" role="navigation" aria-label="Pagination">
+          {% if paginate.previous %}
+            <a class="rounded-xl border border-black/15 px-4 py-2 text-sm hover:border-black/30"
+               href="{{ paginate.previous.url }}">← Prev</a>
+          {% else %}
+            <span class="rounded-xl border border-black/10 px-4 py-2 text-sm text-black/40">← Prev</span>
+          {% endif %}
+
+          <span class="px-3 text-sm text-black/60">
+            Page {{ paginate.current_page }} of {{ paginate.pages }}
+          </span>
+
+          {% if paginate.next %}
+            <a class="rounded-xl border border-black/15 px-4 py-2 text-sm hover:border-black/30"
+               href="{{ paginate.next.url }}">Next →</a>
+          {% else %}
+            <span class="rounded-xl border border-black/10 px-4 py-2 text-sm text-black/40">Next →</span>
+          {% endif %}
+        </nav>
+      {% endif %}
+    {% endpaginate %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Main collection",
+  "settings": [
+    { "type": "range", "id": "products_per_page", "label": "Products per page", "min": 4, "max": 24, "step": 4, "default": 12 },
+
+    { "type": "checkbox", "id": "show_collection_image", "label": "Show collection banner image", "default": true },
+    { "type": "checkbox", "id": "show_collection_description", "label": "Show collection description", "default": true },
+
+    { "type": "checkbox", "id": "show_switcher", "label": "Show collection switcher dropdown", "default": true },
+    { "type": "link_list", "id": "collections_menu", "label": "Collections menu (for dropdown)" },
+
+    { "type": "checkbox", "id": "show_sort", "label": "Show sorting", "default": true }
+  ],
+  "presets": [{ "name": "Main collection" }]
+}
+{% endschema %}

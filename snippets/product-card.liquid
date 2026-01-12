@@ -1,4 +1,5 @@
 {% assign p = product %}
+{% assign v = p.selected_or_first_available_variant %}
 
 <article class="overflow-hidden rounded-2xl bg-white ring-1 ring-black/10">
   <a href="{{ p.url }}" class="block">
@@ -16,27 +17,34 @@
       {% endif %}
 
       {% if show_badge %}
-        <div class="absolute left-3 top-3 rounded bg-caravel-brown px-2 py-1 text-[11px] font-semibold text-white">
+        <div class="absolute left-3 top-3 rounded bg-[#8B6F5A] px-2 py-1 text-[11px] font-semibold text-white">
           Best Seller
         </div>
       {% endif %}
     </div>
 
-    <div class="px-4 pb-4 pt-3 text-center">
+    <div class="px-4 pb-3 pt-3 text-center">
       <p class="font-serif text-base">{{ p.title }}</p>
-      <p class="mt-1 text-sm text-black/70">{{ p.price | money }}</p>
+      <p class="mt-1 text-sm text-black/70">
+        {{ v.price | money }}
+        {% if v.compare_at_price > v.price %}
+          <span class="ml-2 text-xs text-black/50 line-through">{{ v.compare_at_price | money }}</span>
+        {% endif %}
+      </p>
     </div>
   </a>
 
   <div class="px-4 pb-4">
-    {% if p.available %}
+    {% if v.available %}
       <button
-        class="js-add-to-cart w-full rounded-md bg-caravel-brown px-4 py-2 text-sm font-semibold text-white hover:opacity-95"
-        data-variant-id="{{ p.selected_or_first_available_variant.id }}">
-        Add to Cart
+        type="button"
+        class="js-add-to-cart w-full rounded-xl bg-[#8B6F5A] px-4 py-2 text-center text-sm font-semibold text-white hover:opacity-95 disabled:opacity-50"
+        data-variant-id="{{ v.id }}"
+        data-original-text="Add to cart">
+        Add to cart
       </button>
     {% else %}
-      <div class="w-full rounded-md border border-black/15 px-4 py-2 text-center text-sm text-black/60">
+      <div class="w-full rounded-xl border border-black/15 px-4 py-2 text-center text-sm text-black/60">
         Sold out
       </div>
     {% endif %}

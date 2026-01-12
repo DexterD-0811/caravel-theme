@@ -1,10 +1,19 @@
 {
   "sections": {
     "home-hero": { "type": "home-hero" },
-    "featured_collections": { "type": "featured-collections" },
+    "featured_collections": {
+        "type": "featured-collections",
+        "blocks": {
+            "collection_1": { "type": "collection", "settings": { "collection": "" } },
+            "collection_2": { "type": "collection", "settings": { "collection": "" } },
+            "collection_3": { "type": "collection", "settings": { "collection": "" } }
+        },
+        "block_order": ["collection_1", "collection_2", "collection_3"],
+        "settings": { "heading": "Featured Collections" }
+    },
     "featured_products": { "type": "featured-products" },
     "promo-banner": { "type": "promo-banner" },
-    "blog-preview": { "type": "blog-preview" }
+    "blog-preview": { "type": "blog-preview" },
   },
   "order": [
     "home-hero",
